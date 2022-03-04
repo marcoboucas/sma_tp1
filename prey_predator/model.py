@@ -32,6 +32,7 @@ class WolfSheep(Model):
         width=20,
         initial_sheep=100,
         initial_wolves=50,
+        initial_grass=200,
         sheep_reproduce=0.04,
         wolf_reproduce=0.05,
         wolf_gain_from_food=20,
@@ -49,6 +50,7 @@ class WolfSheep(Model):
             wolf_reproduce: Probability of each wolf reproducing each step
             wolf_gain_from_food: Energy a wolf gains from eating a sheep
             grass: Whether to have the sheep eat grass for energy
+            initial_grass : Number of grass patches to start with
             grass_regrowth_time: How long it takes for a grass patch to regrow
                                  once it is eaten
             sheep_gain_from_food: Energy sheep gain from grass, if enabled.
@@ -63,6 +65,7 @@ class WolfSheep(Model):
         self.wolf_reproduce = wolf_reproduce
         self.wolf_gain_from_food = wolf_gain_from_food
         self.grass = grass
+        self.initial_grass = initial_grass
         self.grass_regrowth_time = grass_regrowth_time
         self.sheep_gain_from_food = sheep_gain_from_food
 
@@ -72,6 +75,7 @@ class WolfSheep(Model):
             {
                 "Wolves": lambda m: m.schedule.get_breed_count(Wolf),
                 "Sheep": lambda m: m.schedule.get_breed_count(Sheep),
+                "Grass": lambda m: m.schedule.get_breed_count(GrassPatch),
             }
         )
 
@@ -88,8 +92,14 @@ class WolfSheep(Model):
             self.schedule.add(new_wolf)
             self.grid.place_agent(agent=new_wolf, pos=pos)
 
-        # Create grass patches
-        # ... to be completed
+        if grass:
+            # Create grass patches
+            for grass_id in range(initial_grass):
+                pos = self.get_random_pos()
+                new_grass_patch = GrassPatch(
+                    grass_id, pos, self, fully_grown=True, countdown=self.grass_regrowth_time)
+                self.schedule.add(new_grass_patch)
+                self.grid.place_agent(agent=new_grass_patch, pos=pos)
 
     def step(self):
         self.schedule.step()
