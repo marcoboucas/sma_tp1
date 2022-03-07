@@ -6,49 +6,80 @@ from prey_predator.agents import Wolf, Sheep, GrassPatch
 from prey_predator.model import WolfSheep
 
 
-def wolf_sheep_portrayal(agent):
+def wolf_sheep_portrayal(agent, fast=True):
+    """Display function."""
     if agent is None:
         return
 
     portrayal = {
+        "Shape": "circle",
         "Color": "red",
-        "Filled": "true",
+        "Filled": "false",
         "Layer": 0,
         "r": 0.5,
     }
 
-    if type(agent) is Sheep:
-        portrayal["Shape"] = "sheep.jpg"
-        # ... to be completed
-        pass
+    if isinstance(agent, Sheep):
+        portrayal['Layer'] = 1
+        if fast:
+            portrayal['Color'] = "blue"
+        else:
+            portrayal["Shape"] = "sheep.jpg"
 
-    elif type(agent) is Wolf:
-        portrayal["Shape"] = "wolf.webp"
-        # ... to be completed
-        pass
+    elif isinstance(agent, Wolf):
+        portrayal['Layer'] = 2
+        if fast:
+            portrayal['Color'] = "red"
+        else:
+            portrayal["Shape"] = "wolf.webp"
 
-    elif type(agent) is GrassPatch:
-        # ... to be completed
-        portrayal['Shape'] = "grass.jpg"
-
-        pass
+    elif isinstance(agent, GrassPatch):
+        portrayal['Layer'] = 0
+        if agent.alive:
+            if fast:
+                portrayal['Color'] = "#00ff00f0"
+                portrayal['Shape'] = "rect"
+                portrayal['w'] = 1.
+                portrayal['h'] = 1.
+            else:
+                portrayal["Shape"] = "grass.jpg"
+        else:
+            portrayal["Shape"] = "None"
     return portrayal
 
 
-canvas_element = CanvasGrid(wolf_sheep_portrayal, 20, 20, 500, 500)
 chart_element = ChartModule(
-    [{"Label": "Wolves", "Color": "#AA0000"},
-     {"Label": "Sheep", "Color": "#666666"},
-     {"Label": "Grass", "Color": "#00FF00"}, ]
+    [
+        {"Label": "Wolves", "Color": "#AA0000"},
+        {"Label": "Sheep", "Color": "#666666"},
+        # {"Label": "Grass", "Color": "#00FF00"},
+    ]
 )
 model_params = {
-    "initial_sheep": UserSettableParameter("slider", "Initial Wealth", value=100, min_value=1, max_value=10, description="Initial wealth"),
-    "initial_wolves": UserSettableParameter("slider", "Initial Wealth", value=40, min_value=1, max_value=10, description="Initial wealth"),
-    "initial_grass":  UserSettableParameter("slider", "Initial Wealth", value=50, min_value=1, max_value=10, description="Initial wealth"),
+    "initial_sheep": UserSettableParameter(
+        "slider",
+        "Initial Wealth",
+        value=100,
+        min_value=1,
+        max_value=10,
+        description="Initial wealth",
+    ),
+    "initial_wolves": UserSettableParameter(
+        "slider",
+        "Initial Wealth",
+        value=40,
+        min_value=1,
+        max_value=10,
+        description="Initial wealth",
+    ),
+    "width": 50,
+    "height": 50,
 }
+canvas_element = CanvasGrid(
+    wolf_sheep_portrayal, model_params["width"], model_params["height"], 500, 500
+)
 
 server = ModularServer(
-    WolfSheep, [canvas_element,
-                chart_element], "Prey Predator Model", model_params
+    WolfSheep, [canvas_element, chart_element], "Prey Predator Model", model_params
 )
 server.port = 8521
