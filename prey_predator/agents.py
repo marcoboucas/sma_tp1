@@ -21,22 +21,23 @@ class Sheep(RandomWalker):
         self.random_move()
         if self.energy is not None:
             self.energy -= 1
-        
+
         # Eat grass
         self.eat_grass()
 
         # Die
-        if self.energy is not None and self.energy <=0:
+        if self.energy is not None and self.energy <= 0:
             self.model.kill_agent(self)
 
         # Reproduce
         self.model.reproduce_sheep(self)
 
-
     def eat_grass(self):
         """Eat grass."""
         neighbors = self.model.grid.get_cell_list_contents(self.pos)
-        grass_below = list(filter(lambda x: isinstance(x, GrassPatch) and x.alive, neighbors))
+        grass_below = list(
+            filter(lambda x: isinstance(x, GrassPatch) and x.alive, neighbors)
+        )
         if len(grass_below) > 0:
             to_eat = self.random.choice(grass_below)
             self.model.sheep_eat_grass(self, to_eat)
@@ -46,7 +47,6 @@ class Wolf(RandomWalker):
     """
     A wolf that walks around, reproduces (asexually) and eats sheep.
     """
-
 
     def __init__(self, unique_id, pos, model, moore, energy=None):
         super().__init__(unique_id, pos, model, moore=moore)
@@ -106,10 +106,8 @@ class GrassPatch(Agent):
         self.max_countdown = countdown
         self.countdown = -1
 
-
     def step(self):
         if not self.alive:
             if self.countdown <= 0:
                 self.alive = True
             self.countdown -= 1
-

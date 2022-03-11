@@ -1,51 +1,76 @@
 # Prey - Predator Model
+_By Timothé Chaumont and Marco Boucas_
 
-## Summary
+You will find here our code for the prey predator model simulation, for the Multi-Agent Models course at [CentraleSupélec](https://www.centralesupelec.fr/).
 
-A simple ecological model, consisting of three agent types: wolves, sheep, and grass. The wolves and the sheep wander around the grid at random. Wolves and sheep both expend energy moving around, and replenish it by eating. Sheep eat grass, and wolves eat sheep if they end up on the same grid cell.
 
-If wolves and sheep have enough energy, they reproduce, creating a new wolf or sheep (in this simplified model, only one parent is needed for reproduction). The grass on each cell regrows at a constant rate. If any wolves and sheep run out of energy, they die.
+![Prey Predator Evolution](./docs/evolution.gif)
+# How to ?
+1. Create a python env
+1. Install the requirements `pip install -r requirements.txt`
+1. Run the server `make run` or `mesa runserver`
 
-The model is tests and demonstrates several Mesa concepts and features:
- - MultiGrid
- - Multiple agent types (wolves, sheep, grass)
- - Overlay arbitrary text (wolf's energy) on agent's shapes while drawing on CanvasGrid
- - Agents inheriting a behavior (random movement) from an abstract parent
- - Writing a model composed of multiple files.
- - Dynamically adding and removing agents from the schedule
+# Approach
 
-## Installation
+In this repository, you will find the code for the MAS TP1, that deals with a simple prey predator model.
+Here is the modelisation of this model we decided to implement the following rules:
+- The space is represented as a grid 
+- 3 kind of agents
+    - Grass (green squares)
+        - It is present on every square of the grid
+        - When eaten, it will take several steps to be fully grown again (and so eatable)
+        - It is eaten by the sheeps
+    - Sheep (blue points)
+        - Some are spawned at the beginning of the simulation
+        - They will move randomly
+        - They will eat grass
+        - They will reproduce alone (hermaphodites)
+    - Wolf (red points)
+        - Some are spawned at the beginning of the simulation
+        - They will move randomly
+        - They will eat sheep
+        - They will reproduce alone (hermaphodites)
 
-To install the dependencies use pip and the requirements.txt in this directory. e.g.
 
-```
-    $ pip install -r requirements.txt
-```
+# Code specifications / Rules
 
-## How to Run
+Some basic rules we decided to apply in this code (object programming oriented). One of our many concerns was to make sure that the agents do not touch other agents directly, but through the model:
+- The agents are only interacting (eating grass or sheeps) through the environment, and do not kill themselves the other agents.
+- The reproduction step is done in the model also (easily to do that way also) and the creation also
+- Most of the parameters are variables thanks to the sliders, to make it faster to update them and see if it goes OK.
+- The agents do not kill themselves when they run out of energy. It is clearly debatable, but it is the system that kill them instead.
 
-To run the model interactively, run ``mesa runserver`` in this directory. e.g.
 
-```
-    $ mesa runserver
-```
+# Simulation results
+After some tries, we found some parameters that gave good results (meaning, some equilibrium was reached (and not lost too soon)).
+Here are the parameters
 
-Then open your browser to [http://127.0.0.1:8521/](http://127.0.0.1:8521/) and press Reset, then Run.
+| Parameter name                   | Value |
+|----------------------------------|-------|
+| Width                            | 30    |
+| Height                           | 30    |
+| Initial number of sheeps         | ~40   |
+| Initial number of wolves         | 10    |
+| Initial wolves energy            | 4     |
+| Initial sheeps energy            | 10    |
+| Wolf food gain                   | 10    |
+| Reproduction probability (sheep) | 0.09  |
+| Reproduction probability (wolf)  | 0.09  |
 
-## Files
+With those parameters, we can reach an equilibrium (that breaks sometimes, too much random)
+Some tests were made on a bigger scale, and the results where much more promising if not slower to computer on a long time scale.
 
-* ``prey_predator/random_walker.py``: This defines the ``RandomWalker`` agent, which implements the behavior of moving randomly across a grid, one cell at a time. Both the Wolf and Sheep agents will inherit from it.
-* ``prey_predator/agents.py``: Defines the Wolf, Sheep, and GrassPatch agent classes.
-* ``prey_predator/schedule.py``: Defines a custom variant on the RandomActivation scheduler, where all agents of one class are activated (in random order) before the next class goes -- e.g. all the wolves go, then all the sheep, then all the grass.
-* ``prey_predator/model.py``: Defines the Prey-Predator model itself
-* ``prey_predator/server.py``: Sets up the interactive visualization server
-* ``run.py``: Launches a model visualization server.
+![Example of the populations evoluation over time for those parameters](./docs/evolution.png)
 
-## Further Reading
+We can clearly see the classic evolution:
+- When we start, the sheeps are more numerous than the wolves
+- When we have a lot of sheeps, the wolves are eating them and reproducing
+- When we have a lot of wolves, the sheeps population get smaller, but when not enough sheeps, they slowing starve to death.
 
-This model is closely based on the NetLogo Wolf-Sheep Predation Model:
+## Parameters analysis
 
-Wilensky, U. (1997). NetLogo Wolf Sheep Predation model. http://ccl.northwestern.edu/netlogo/models/WolfSheepPredation. Center for Connected Learning and Computer-Based Modeling, Northwestern University, Evanston, IL.
-
-See also the [Lotka–Volterra equations
-](https://en.wikipedia.org/wiki/Lotka%E2%80%93Volterra_equations) for an example of a classic differential-equation model with similar dynamics.
+We needed to change the parameters quite a lot to find some equilibrium during the simulation (and in fact, we did not reach yet an absolute equilibrium, but instead sometimes all the sheeps or wolves ends up to die.
+Here are some observations we made:
+- When the size of the space gets bigger (increasing width and height), and if we scale up the starting populations accordingly, the equilibrium is much stable
+- We need less wolves than sheeps to reach an equilibrium
+- We need to make sure wolves are likely to die fast if not eating, hence decrease the food gain to avoid that wolves stay too much and too long
